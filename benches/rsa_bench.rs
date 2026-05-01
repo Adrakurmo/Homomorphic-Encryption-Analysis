@@ -5,7 +5,7 @@ use homomorphic_encryption_analysis::{KEY_SIZE, paillier_pure::PaillierKeys, rsa
 use num_bigint::BigUint;
 use rsa_ext::RsaPrivateKey;
 
-fn _native_rsa(keys: &RsaKeys) -> BigUint {
+fn native_rsa(keys: &RsaKeys) -> BigUint {
     let start = BigUint::from(1u8);
     let mut result: BigUint = BigUint::from(1u8);
     let mut ciphertext = keys.encrypt(start);
@@ -99,9 +99,9 @@ fn criterion_benchmark(c: &mut Criterion) {
 
     let mut group = c.benchmark_group("Encryption time Comparison");
 
-    // group.bench_function("Native RSA", |b| {
-    //     b.iter(|| native_rsa(black_box(&rsa_pure_keys)))
-    // });
+    group.bench_function("Native RSA", |b| {
+        b.iter(|| native_rsa(black_box(&rsa_pure_keys)))
+    });
 
     group.bench_function("Homomorphic Paillier", |b| {
         b.iter(|| homomorphic_paillier(black_box(&paillier_pure_keys), black_box(&cts_he_paillier)))
