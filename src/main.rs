@@ -1,5 +1,7 @@
+use base64::{Engine, prelude::BASE64_STANDARD};
 use homomorphic_encryption_analysis::{KEY_SIZE, paillier_pure::PaillierKeys, rsa_pure::{RsaKeys}};
 use num_bigint::BigUint;
+use rand::RngCore;
 use rsa_ext::{RsaPrivateKey};
 
 
@@ -38,6 +40,7 @@ fn main() {
     // RSA
     
 
+
     // let m1 = BigUint::from(2u8);
     // let m2 = BigUint::from(3u8);
 
@@ -50,14 +53,35 @@ fn main() {
     // println!("{}", pure_keys.decrypt(&result));
 
     // PAILLIER
-    let m1 = BigUint::from(2u8);
-    let m2 = BigUint::from(33u8);
-    let encrypted = _paillier_keys.encrypt(m1);
-    let encrypted_2 = _paillier_keys.encrypt(m2);
-    let connected = encrypted * encrypted_2;
-    println!("ENC: {}", connected);
-    let decrypted = _paillier_keys.decrypt(connected);
-    println!("DEC: {}", decrypted); 
+    // let m1 = BigUint::from(2u8);
+    // let m2 = BigUint::from(33u8);
+    let mut m2000_1 = vec![0u8; 1024*1024];    // 2000 bits
+    rng.fill_bytes(&mut m2000_1);
+    
+    // let num_1 = BigUint::from_bytes_be(&m2000_1);
+    println!("BAS: {}\n", BASE64_STANDARD.encode(&m2000_1));
+    let encrypted = _paillier_keys.block_encrypt(m2000_1.clone());
+    println!("PAILLIER ENC: {}\n", BASE64_STANDARD.encode(&encrypted));
+    let decrypted = _paillier_keys.block_decrypt(encrypted);
+    println!("PAILLIER DEC: {}\n", BASE64_STANDARD.encode(&decrypted));
+    println!();
+    println!("{}\n\n", BigUint::from_bytes_be(&m2000_1));
+    println!("{}", BigUint::from_bytes_be(&decrypted));
+    // let ecnrypted_2 = _pure_keys.encrypt(num_1.clone());
+    // println!("RSA ENC: {}\n", ecnrypted_2);
+    // let decrypted_2 = _pure_keys.decrypt(&ecnrypted_2);
+    // println!("RSA DEC: {}\n", decrypted_2);
+
+
+
+
+
+    // let encrypted = _paillier_keys.encrypt(m1);
+    // let encrypted_2 = _paillier_keys.encrypt(m2);
+    // let connected = encrypted * encrypted_2;
+    // println!("ENC: {}", connected);
+    // let decrypted = _paillier_keys.decrypt(connected);
+    // println!("DEC: {}", decrypted); 
 
     // let to_encrypt = b"Hello world!";
     // println!("PTX: {}", BASE64_STANDARD.encode(&to_encrypt[..]));

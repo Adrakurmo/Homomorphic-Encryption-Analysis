@@ -15,3 +15,9 @@ impl ToBigUint for &[u8] {
         BigUint::from_bytes_be(&self)
     }
 }
+
+impl<const N: usize> ToBigUint for &[u8; N] {
+    fn to_biguint(&self) -> BigUint {
+        BigUint::from_bytes_be(&self[..])
+    }
+}
