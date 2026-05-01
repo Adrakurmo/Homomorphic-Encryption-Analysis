@@ -239,4 +239,24 @@ mod tests {
             }
         );
     }
+
+    #[test]
+    fn homomorphic_paillier_operation_preserves_ciphertext_length() {
+        let keys = test_keys();
+        let a = BigUint::from(10u8);
+        let b = BigUint::from(20u8);
+
+        let enc_a = keys.encrypt_checked(a.clone()).unwrap();
+        let enc_b = keys.encrypt_checked(b.clone()).unwrap();
+        let combined = (&enc_a * &enc_b) % &keys.n2;
+
+        let enc_a_bytes = serialize_ciphertext(&enc_a, keys.ciphertext_len_bytes());
+        let enc_b_bytes = serialize_ciphertext(&enc_b, keys.ciphertext_len_bytes());
+        let combined_bytes = serialize_ciphertext(&combined, keys.ciphertext_len_bytes());
+
+        assert_eq!(enc_a_bytes.len(), KEY_SIZE / 4);
+        assert_eq!(enc_b_bytes.len(), KEY_SIZE / 4);
+        assert_eq!(combined_bytes.len(), KEY_SIZE / 4);
+        assert_eq!(keys.decrypt(combined), a + b);
+    }
 }

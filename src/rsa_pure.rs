@@ -145,7 +145,7 @@ mod tests {
 
     use crate::KEY_SIZE;
 
-    use super::{RsaEncryptError, RsaKeys};
+    use super::{Ciphertext, RsaEncryptError, RsaKeys};
 
     fn test_keys() -> &'static RsaKeys {
         static KEYS: OnceLock<RsaKeys> = OnceLock::new();
@@ -209,5 +209,27 @@ mod tests {
                 modulus_bits: keys.n.bits(),
             }
         );
+    }
+
+    #[test]
+    fn homomorphic_rsa_operation_preserves_ciphertext_length() {
+        let keys = test_keys();
+        let a = BigUint::from(10u8);
+        let b = BigUint::from(20u8);
+
+        let enc_a = keys.encrypt_checked(a.clone()).unwrap();
+        let enc_b = keys.encrypt_checked(b.clone()).unwrap();
+        let ct_a = Ciphertext::new(enc_a.clone(), &keys.n);
+        let ct_b = Ciphertext::new(enc_b.clone(), &keys.n);
+        let combined = ct_a * ct_b;
+
+        let enc_a_bytes = serialize_ciphertext(&enc_a, keys.modulus_len_bytes());
+        let enc_b_bytes = serialize_ciphertext(&enc_b, keys.modulus_len_bytes());
+        let combined_bytes = serialize_ciphertext(&combined.value, keys.modulus_len_bytes());
+
+        assert_eq!(enc_a_bytes.len(), KEY_SIZE / 8);
+        assert_eq!(enc_b_bytes.len(), KEY_SIZE / 8);
+        assert_eq!(combined_bytes.len(), KEY_SIZE / 8);
+        assert_eq!(keys.decrypt(&combined.value), a * b);
     }
 }
