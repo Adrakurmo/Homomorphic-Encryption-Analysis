@@ -1,5 +1,5 @@
 use base64::{Engine, prelude::BASE64_STANDARD};
-use homomorphic_encryption_analysis::{KEY_SIZE, paillier_pure::PaillierKeys, rsa_pure::{RsaKeys}};
+use homomorphic_encryption_analysis::{KEY_SIZE, paillier_pure::PaillierKeys, rsa_pure::RsaKeys, voting::{ciphertext_storage_bytes, default_paillier_keys, plaintext_vote_sum, run_voting_simulation}};
 use num_bigint::BigUint;
 use rand::RngCore;
 use rsa_ext::{RsaPrivateKey};
@@ -55,18 +55,18 @@ fn main() {
     // PAILLIER
     // let m1 = BigUint::from(2u8);
     // let m2 = BigUint::from(33u8);
-    let mut m2000_1 = vec![0u8; 1024*1024];    // 2000 bits
-    rng.fill_bytes(&mut m2000_1);
+    // let mut m2000_1 = vec![0u8; 1024*1024];    // 2000 bits
+    // rng.fill_bytes(&mut m2000_1);
     
     // let num_1 = BigUint::from_bytes_be(&m2000_1);
-    println!("BAS: {}\n", BASE64_STANDARD.encode(&m2000_1));
-    let encrypted = _paillier_keys.block_encrypt(m2000_1.clone());
-    println!("PAILLIER ENC: {}\n", BASE64_STANDARD.encode(&encrypted));
-    let decrypted = _paillier_keys.block_decrypt(encrypted);
-    println!("PAILLIER DEC: {}\n", BASE64_STANDARD.encode(&decrypted));
-    println!();
-    println!("{}\n\n", BigUint::from_bytes_be(&m2000_1));
-    println!("{}", BigUint::from_bytes_be(&decrypted));
+    // println!("BAS: {}\n", BASE64_STANDARD.encode(&m2000_1));
+    // let encrypted = _paillier_keys.block_encrypt(m2000_1.clone());
+    // println!("PAILLIER ENC: {}\n", BASE64_STANDARD.encode(&encrypted));
+    // let decrypted = _paillier_keys.block_decrypt(encrypted);
+    // println!("PAILLIER DEC: {}\n", BASE64_STANDARD.encode(&decrypted));
+    // println!();
+    // println!("{}\n\n", BigUint::from_bytes_be(&m2000_1));
+    // println!("{}", BigUint::from_bytes_be(&decrypted));
     // let ecnrypted_2 = _pure_keys.encrypt(num_1.clone());
     // println!("RSA ENC: {}\n", ecnrypted_2);
     // let decrypted_2 = _pure_keys.decrypt(&ecnrypted_2);
@@ -91,17 +91,6 @@ fn main() {
     // show_message_b64(&decypted_msg, "DEC:");
     // show_message(&decypted_msg);
 
-
-
-
-
-
-
-
-
-
-
-
     // let data = b"hello world";
     // let padding = PaddingScheme::new_oaep::<sha2::Sha256>();
     // let enc_data = public_key.encrypt(&mut rng, padding, &data[..]).expect("Failed to encrypt");
@@ -122,6 +111,26 @@ fn main() {
 
     // println!("{}", *private_pem);
     // println!("{}", public_pem);
+
+    let keys = default_paillier_keys();
+
+    let votes: Vec<u8> = (0..100)
+        .map(|index| if index % 3 == 0 { 1 } else { 0 })
+        .collect();
+
+    let result = run_voting_simulation(&keys, &votes).unwrap();
+    let expected_tally = plaintext_vote_sum(&votes);
+    let storage_bytes = ciphertext_storage_bytes(&keys, &result.encrypted_votes);
+
+    println!("Voting simulation for 100 voters");
+    println!("Votes count: {}", votes.len());
+    println!("Expected tally: {}", expected_tally);
+    println!("Decrypted tally: {}", result.decrypted_tally);
+    println!("Encrypted votes stored: {}", result.encrypted_votes.len());
+    println!("Ciphertext size per vote: {} bytes", keys.ciphertext_len_bytes());
+    println!("Total ciphertext storage: {} bytes", storage_bytes);
+    println!("Encrypted tally (bits): {}", result.encrypted_tally.bits());
+    println!("First 5 votes: {:?}", &votes[..5]);
 }
 
 

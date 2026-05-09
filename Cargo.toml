@@ -19,3 +19,7 @@ criterion = { version = "0.8.2", features = ["html_reports"] }
 [[bench]]
 name = "rsa_bench"
 harness = false
+
+[[bench]]
+name = "voting_bench"
+harness = false

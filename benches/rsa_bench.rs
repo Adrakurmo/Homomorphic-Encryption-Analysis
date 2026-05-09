@@ -33,12 +33,23 @@ fn homomorphic_rsa(keys: &RsaKeys, precomputed_cts: &Vec<Ciphertext>) -> BigUint
 fn homomorphic_paillier(keys: &PaillierKeys, precomputed_cts: &Vec<BigUint>) -> BigUint {
     let mut c1 = precomputed_cts.get(0).unwrap().clone();
     for ct in precomputed_cts.iter() {
+        // This benchmark intentionally skips the modulo n^2 reduction here, so c1 grows into a much larger BigUint
+        // than a real Paillier tally would use. That artificial growth increases multiplication cost and inflates time.
         c1 = c1 * ct;
     }
     let decrypted = keys.decrypt(c1);
     // println!("PAILLIER: {}", decrypted);
     decrypted 
     
+}
+
+fn homomorphic_paillier_corrected(keys: &PaillierKeys, precomputed_cts: &[BigUint]) -> BigUint {
+    let c1 = precomputed_cts
+        .iter()
+        .fold(BigUint::from(1u8), |acc, ct| (acc * ct) % &keys.n2);
+
+    let decrypted = keys.decrypt(c1);
+    decrypted
 }
 
 fn get_ciphertexts(keys: &RsaKeys) -> Vec<Ciphertext> {
@@ -107,9 +118,14 @@ fn criterion_benchmark(c: &mut Criterion) {
         b.iter(|| homomorphic_paillier(black_box(&paillier_pure_keys), black_box(&cts_he_paillier)))
     });
 
+    group.bench_function("Homomorphic Paillier (corrected)", |b| {
+        b.iter(|| homomorphic_paillier_corrected(black_box(&paillier_pure_keys), black_box(&cts_he_paillier)))
+    });
+
     group.bench_function("Homomorphic RSA", |b| {
         b.iter(|| homomorphic_rsa(black_box(&rsa_pure_keys),black_box( &cts_he_rsa)))
     });
+
 
     group.finish();
 }
