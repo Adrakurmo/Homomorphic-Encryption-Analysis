@@ -1,21 +1,22 @@
-use base64::{Engine, prelude::BASE64_STANDARD};
-use homomorphic_encryption_analysis::{KEY_SIZE, paillier_pure::PaillierKeys, rsa_pure::RsaKeys, voting::{ciphertext_storage_bytes, default_paillier_keys, plaintext_vote_sum, run_voting_simulation}};
+use homomorphic_encryption_analysis::{
+    KEY_SIZE,
+    paillier_pure::PaillierKeys,
+    rsa_pure::RsaKeys,
+    voting::{
+        ciphertext_storage_bytes, default_paillier_keys, plaintext_vote_sum, run_voting_simulation,
+    },
+};
 use num_bigint::BigUint;
-use rand::RngCore;
-use rsa_ext::{RsaPrivateKey};
-
+use rsa_ext::RsaPrivateKey;
 
 fn main() {
-
-    
     // ################################################################################################################
     // # KEY GEN
     // ################################################################################################################
     let mut rng = rand::thread_rng();
     let bits = KEY_SIZE;
 
-    let private_key = RsaPrivateKey::new(&mut rng, bits)
-        .expect("Failed to generate RSA key");
+    let private_key = RsaPrivateKey::new(&mut rng, bits).expect("Failed to generate RSA key");
     // let public_key = RsaPublicKey::from(&private_key);
 
     let primes = private_key.primes();
@@ -25,21 +26,19 @@ fn main() {
 
     // PURE RSA KEYS
     let _pure_keys = RsaKeys::new(
-        BigUint::from_bytes_be(&p_bytes).clone(), 
-        BigUint::from_bytes_be(&q_bytes).clone()
+        BigUint::from_bytes_be(&p_bytes).clone(),
+        BigUint::from_bytes_be(&q_bytes).clone(),
     );
 
     // PURE PAILLIER KEYS
     let _paillier_keys = PaillierKeys::new(
-        &BigUint::from_bytes_be(&p_bytes), 
-        &BigUint::from_bytes_be(&q_bytes)
+        &BigUint::from_bytes_be(&p_bytes),
+        &BigUint::from_bytes_be(&q_bytes),
     );
     // ################################################################################################################
     // # TESTING
     // ################################################################################################################
     // RSA
-    
-
 
     // let m1 = BigUint::from(2u8);
     // let m2 = BigUint::from(3u8);
@@ -57,7 +56,7 @@ fn main() {
     // let m2 = BigUint::from(33u8);
     // let mut m2000_1 = vec![0u8; 1024*1024];    // 2000 bits
     // rng.fill_bytes(&mut m2000_1);
-    
+
     // let num_1 = BigUint::from_bytes_be(&m2000_1);
     // println!("BAS: {}\n", BASE64_STANDARD.encode(&m2000_1));
     // let encrypted = _paillier_keys.block_encrypt(m2000_1.clone());
@@ -72,16 +71,12 @@ fn main() {
     // let decrypted_2 = _pure_keys.decrypt(&ecnrypted_2);
     // println!("RSA DEC: {}\n", decrypted_2);
 
-
-
-
-
     // let encrypted = _paillier_keys.encrypt(m1);
     // let encrypted_2 = _paillier_keys.encrypt(m2);
     // let connected = encrypted * encrypted_2;
     // println!("ENC: {}", connected);
     // let decrypted = _paillier_keys.decrypt(connected);
-    // println!("DEC: {}", decrypted); 
+    // println!("DEC: {}", decrypted);
 
     // let to_encrypt = b"Hello world!";
     // println!("PTX: {}", BASE64_STANDARD.encode(&to_encrypt[..]));
@@ -127,11 +122,11 @@ fn main() {
     println!("Expected tally: {}", expected_tally);
     println!("Decrypted tally: {}", result.decrypted_tally);
     println!("Encrypted votes stored: {}", result.encrypted_votes.len());
-    println!("Ciphertext size per vote: {} bytes", keys.ciphertext_len_bytes());
+    println!(
+        "Ciphertext size per vote: {} bytes",
+        keys.ciphertext_len_bytes()
+    );
     println!("Total ciphertext storage: {} bytes", storage_bytes);
     println!("Encrypted tally (bits): {}", result.encrypted_tally.bits());
     println!("First 5 votes: {:?}", &votes[..5]);
 }
-
-
-

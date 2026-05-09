@@ -19,7 +19,7 @@ fn build_votes(voter_count: usize) -> Vec<u8> {
 
 fn print_storage_summary() {
     let keys = default_paillier_keys();
- 
+
     println!("Paillier voting ciphertext storage summary:");
     for voter_count in VOTER_COUNTS {
         let votes = build_votes(voter_count);
@@ -94,9 +94,13 @@ fn benchmark_end_to_end_voting(c: &mut Criterion) {
         let votes = build_votes(voter_count);
 
         group.throughput(Throughput::Elements(voter_count as u64));
-        group.bench_with_input(BenchmarkId::from_parameter(voter_count), &votes, |b, votes| {
-            b.iter(|| run_voting_simulation(black_box(&keys), black_box(votes)).unwrap())
-        });
+        group.bench_with_input(
+            BenchmarkId::from_parameter(voter_count),
+            &votes,
+            |b, votes| {
+                b.iter(|| run_voting_simulation(black_box(&keys), black_box(votes)).unwrap())
+            },
+        );
     }
 
     group.finish();

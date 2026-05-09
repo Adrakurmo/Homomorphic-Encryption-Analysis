@@ -53,11 +53,11 @@ impl PaillierKeys {
         let u = _g.modpow(&_lambda, &_n2);
         let l_u = (u - 1u32) / &_n;
         let _mi = l_u.modinv(&_n).unwrap();
-        Self { 
-            p: _p.clone(), 
-            q: _q.clone(), 
-            n: _n.clone(), 
-            n2:_n2.clone(), 
+        Self {
+            p: _p.clone(),
+            q: _q.clone(),
+            n: _n.clone(),
+            n2: _n2.clone(),
             lambda: _lambda,
             g: _g,
             mi: _mi,
@@ -77,7 +77,7 @@ impl PaillierKeys {
 
         for chunk in data.chunks((KEY_SIZE - 8) / 8) {
             println!("{}", chunk.len());
-            let r = get_coprime(&self.n, None); 
+            let r = get_coprime(&self.n, None);
             let data_num = BigUint::from_bytes_be(chunk);
             let gm = self.g.modpow(&data_num, &self.n2);
             let rn = r.modpow(&self.n, &self.n2);
@@ -101,7 +101,10 @@ impl PaillierKeys {
         for chunk in data.chunks((KEY_SIZE) / 4) {
             println!("{}", chunk.len());
             let data_num = BigUint::from_bytes_be(chunk);
-            result.push((self.l(&data_num.modpow(&self.lambda, &self.n2)) * &self.mi % &self.n).to_bytes_be());
+            result.push(
+                (self.l(&data_num.modpow(&self.lambda, &self.n2)) * &self.mi % &self.n)
+                    .to_bytes_be(),
+            );
         }
         result.concat()
     }
@@ -115,9 +118,9 @@ impl PaillierKeys {
             });
         }
 
-        let r = get_coprime(&self.n, None); 
+        let r = get_coprime(&self.n, None);
         // c = g^m * r^n mod n^2
-        
+
         // g^m
         let gm = self.g.modpow(&data, &self.n2);
         // r^n mod n^2
@@ -140,23 +143,19 @@ impl PaillierKeys {
     pub fn l(&self, x: &BigUint) -> BigUint {
         (x - 1u32) / &self.n
     }
-
 }
-
-
-
 
 fn get_coprime(xn: &BigUint, ct: Option<u8>) -> BigUint {
     let ct = ct.unwrap_or(64);
     let mut rng = thread_rng();
     let one = BigUint::from(1u8);
     let two = BigUint::from(2u8);
-    
+
     for _ in 0..ct {
-        let cand = rng.gen_biguint_range(&two,xn);
+        let cand = rng.gen_biguint_range(&two, xn);
         let valid = cand.gcd(xn) == one;
         if valid {
-            return cand
+            return cand;
         }
     }
 

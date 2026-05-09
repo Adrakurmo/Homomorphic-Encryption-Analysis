@@ -3,7 +3,10 @@ use std::fmt;
 use num_bigint::BigUint;
 use rsa_ext::RsaPrivateKey;
 
-use crate::{KEY_SIZE, paillier_pure::{PaillierEncryptError, PaillierKeys}};
+use crate::{
+    KEY_SIZE,
+    paillier_pure::{PaillierEncryptError, PaillierKeys},
+};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum VotingError {
@@ -37,8 +40,8 @@ pub struct VotingSimulationResult {
 
 pub fn generate_paillier_keys(bits: usize) -> PaillierKeys {
     let mut rng = rand::thread_rng();
-    let private_key = RsaPrivateKey::new(&mut rng, bits)
-        .expect("failed to generate Paillier simulation key");
+    let private_key =
+        RsaPrivateKey::new(&mut rng, bits).expect("failed to generate Paillier simulation key");
     let primes = private_key.primes();
 
     assert_eq!(primes.len(), 2);
@@ -70,9 +73,11 @@ pub fn encrypt_votes(keys: &PaillierKeys, votes: &[u8]) -> Result<Vec<BigUint>, 
 }
 
 pub fn sum_encrypted_votes(keys: &PaillierKeys, encrypted_votes: &[BigUint]) -> BigUint {
-    encrypted_votes.iter().fold(BigUint::from(1u8), |acc, ciphertext| {
-        (acc * ciphertext) % &keys.n2
-    })
+    encrypted_votes
+        .iter()
+        .fold(BigUint::from(1u8), |acc, ciphertext| {
+            (acc * ciphertext) % &keys.n2
+        })
 }
 
 pub fn decrypt_tally(keys: &PaillierKeys, encrypted_tally: &BigUint) -> BigUint {

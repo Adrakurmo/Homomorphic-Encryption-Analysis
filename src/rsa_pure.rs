@@ -1,7 +1,7 @@
 use std::{fmt, ops::Mul};
 
 use base64::{Engine, prelude::BASE64_STANDARD};
-use num_bigint::{BigUint};
+use num_bigint::BigUint;
 
 use crate::{DEFAULT_E, traits::ToBigUint};
 
@@ -41,14 +41,14 @@ impl std::error::Error for RsaEncryptError {}
 #[derive(Clone)]
 pub struct Ciphertext {
     pub value: BigUint,
-    pub n: BigUint
+    pub n: BigUint,
 }
 
 impl Ciphertext {
     pub fn new(_value: BigUint, _n: &BigUint) -> Self {
-        Ciphertext { 
-            value: _value, 
-            n: _n.clone() 
+        Ciphertext {
+            value: _value,
+            n: _n.clone(),
         }
     }
 }
@@ -57,9 +57,10 @@ impl Mul for Ciphertext {
     type Output = Self;
 
     fn mul(self, rhs: Self) -> Self {
-        Ciphertext { 
-            value: (self.value * rhs.value) % &self.n, 
-            n: self.n }
+        Ciphertext {
+            value: (self.value * rhs.value) % &self.n,
+            n: self.n,
+        }
     }
 }
 
@@ -84,16 +85,14 @@ impl RsaKeys {
         let fi = (&_p - &b_one) * (&_q - &b_one);
 
         // d = e.modinv(fi)
-        let _d = _e
-            .modinv(&fi)
-            .expect("Is 'e' and 'fi' coprime?");
+        let _d = _e.modinv(&fi).expect("Is 'e' and 'fi' coprime?");
 
         Self {
             p: _p,
             q: _q,
             n: _n,
             e: _e,
-            d: _d
+            d: _d,
         }
     }
 
@@ -113,7 +112,7 @@ impl RsaKeys {
         Ok(m.modpow(&self.e, &self.n))
     }
 
-    pub fn encrypt <T: ToBigUint>(&self, data: T) -> BigUint {
+    pub fn encrypt<T: ToBigUint>(&self, data: T) -> BigUint {
         self.encrypt_checked(data)
             .expect("plaintext representative must be smaller than RSA modulus")
     }
@@ -123,15 +122,17 @@ impl RsaKeys {
     }
 }
 
-
 pub fn show_message_b64(msg: &BigUint, prefix: &str) {
-    println!("{} {}",prefix.to_string(), BASE64_STANDARD.encode(msg.to_bytes_be()));
+    println!(
+        "{} {}",
+        prefix.to_string(),
+        BASE64_STANDARD.encode(msg.to_bytes_be())
+    );
 }
 
 pub fn show_message(msg: &BigUint) {
     let bytes = msg.to_bytes_be();
-    let text = String::from_utf8(bytes)
-        .expect("Not valid plaintext :c");
+    let text = String::from_utf8(bytes).expect("Not valid plaintext :c");
     println!("PT: {}", text);
 }
 

@@ -1,7 +1,11 @@
 use std::hint::black_box;
 
-use criterion::{criterion_group, criterion_main, Criterion};
-use homomorphic_encryption_analysis::{KEY_SIZE, paillier_pure::PaillierKeys, rsa_pure::{Ciphertext, RsaKeys}};
+use criterion::{Criterion, criterion_group, criterion_main};
+use homomorphic_encryption_analysis::{
+    KEY_SIZE,
+    paillier_pure::PaillierKeys,
+    rsa_pure::{Ciphertext, RsaKeys},
+};
 use num_bigint::BigUint;
 use rsa_ext::RsaPrivateKey;
 
@@ -9,9 +13,9 @@ fn native_rsa(keys: &RsaKeys) -> BigUint {
     let start = BigUint::from(1u8);
     let mut result: BigUint = BigUint::from(1u8);
     let mut ciphertext = keys.encrypt(start);
-    for i in 0..100u32 - 1  {
+    for i in 0..100u32 - 1 {
         let mut plaintext = keys.decrypt(&ciphertext);
-        plaintext *= BigUint::from(i + 1u32);  // RIP FOR ++i++ ...
+        plaintext *= BigUint::from(i + 1u32); // RIP FOR ++i++ ...
         result = plaintext.clone();
         ciphertext = keys.encrypt(plaintext);
     }
@@ -39,8 +43,7 @@ fn homomorphic_paillier(keys: &PaillierKeys, precomputed_cts: &Vec<BigUint>) -> 
     }
     let decrypted = keys.decrypt(c1);
     // println!("PAILLIER: {}", decrypted);
-    decrypted 
-    
+    decrypted
 }
 
 fn homomorphic_paillier_corrected(keys: &PaillierKeys, precomputed_cts: &[BigUint]) -> BigUint {
@@ -54,18 +57,11 @@ fn homomorphic_paillier_corrected(keys: &PaillierKeys, precomputed_cts: &[BigUin
 
 fn get_ciphertexts(keys: &RsaKeys) -> Vec<Ciphertext> {
     let mut result: Vec<Ciphertext> = vec![];
-    let c1 = Ciphertext::new(
-        keys.encrypt(BigUint::from(1u8)),
-        &keys.n
-    );
+    let c1 = Ciphertext::new(keys.encrypt(BigUint::from(1u8)), &keys.n);
     result.push(c1);
-    
 
     for i in 0..100u32 - 1 {
-        let c2 = Ciphertext::new(
-            keys.encrypt(BigUint::from(i + 1u32)), 
-            &keys.n
-        );
+        let c2 = Ciphertext::new(keys.encrypt(BigUint::from(i + 1u32)), &keys.n);
         result.push(c2);
     }
 
@@ -85,8 +81,7 @@ fn criterion_benchmark(c: &mut Criterion) {
     let mut rng = rand::thread_rng();
     let bits = KEY_SIZE;
 
-    let private_key = RsaPrivateKey::new(&mut rng, bits)
-        .expect("Failed to generate RSA key");
+    let private_key = RsaPrivateKey::new(&mut rng, bits).expect("Failed to generate RSA key");
 
     let primes = private_key.primes();
     assert_eq!(primes.len(), 2);
@@ -96,13 +91,13 @@ fn criterion_benchmark(c: &mut Criterion) {
     // For HE I am using my native RSA implementation, though key gen
     // is borrowd from ext_rsa
     let rsa_pure_keys = RsaKeys::new(
-        BigUint::from_bytes_be(&p_bytes).clone(), 
-        BigUint::from_bytes_be(&q_bytes).clone()
+        BigUint::from_bytes_be(&p_bytes).clone(),
+        BigUint::from_bytes_be(&q_bytes).clone(),
     );
 
     let paillier_pure_keys = PaillierKeys::new(
         &BigUint::from_bytes_be(&p_bytes),
-        &BigUint::from_bytes_be(&q_bytes)
+        &BigUint::from_bytes_be(&q_bytes),
     );
 
     let cts_he_rsa = get_ciphertexts(&rsa_pure_keys);
@@ -119,13 +114,17 @@ fn criterion_benchmark(c: &mut Criterion) {
     });
 
     group.bench_function("Homomorphic Paillier (corrected)", |b| {
-        b.iter(|| homomorphic_paillier_corrected(black_box(&paillier_pure_keys), black_box(&cts_he_paillier)))
+        b.iter(|| {
+            homomorphic_paillier_corrected(
+                black_box(&paillier_pure_keys),
+                black_box(&cts_he_paillier),
+            )
+        })
     });
 
     group.bench_function("Homomorphic RSA", |b| {
-        b.iter(|| homomorphic_rsa(black_box(&rsa_pure_keys),black_box( &cts_he_rsa)))
+        b.iter(|| homomorphic_rsa(black_box(&rsa_pure_keys), black_box(&cts_he_rsa)))
     });
-
 
     group.finish();
 }

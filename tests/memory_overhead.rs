@@ -1,8 +1,4 @@
-use homomorphic_encryption_analysis::{
-    KEY_SIZE,
-    paillier_pure::PaillierKeys,
-    rsa_pure::RsaKeys,
-};
+use homomorphic_encryption_analysis::{KEY_SIZE, paillier_pure::PaillierKeys, rsa_pure::RsaKeys};
 use num_bigint::BigUint;
 use rand::thread_rng;
 use rsa_ext::RsaPrivateKey;

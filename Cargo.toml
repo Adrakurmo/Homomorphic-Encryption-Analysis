@@ -23,3 +23,7 @@ harness = false
 [[bench]]
 name = "voting_bench"
 harness = false
+
+[[bench]]
+name = "iot_energy_bench"
+harness = false
