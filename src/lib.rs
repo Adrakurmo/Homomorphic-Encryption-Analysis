@@ -1,3 +1,4 @@
+pub mod classic_crypto;
 pub mod iot_energy;
 pub mod paillier_pure;
 pub mod rsa_oaep;

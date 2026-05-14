@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+aes-gcm = "0.10.3"
 base64 = "0.22.1"
 num-bigint = { version = "0.4.6", features = ["rand"] }
 num-integer = "0.1.46"
@@ -26,4 +27,8 @@ harness = false
 
 [[bench]]
 name = "iot_energy_bench"
+harness = false
+
+[[bench]]
+name = "comparison_bench"
 harness = false

@@ -1,0 +1,5 @@
+method,single_plaintext_bytes,single_ciphertext_bytes,single_overhead_ratio,dataset_measurements,dataset_ciphertext_bytes,dataset_overhead_ratio
+Paillier,8,512,64.000000,100,51200,64.000000
+AES-GCM,8,36,4.500000,100,3600,4.500000
+RSA-OAEP,8,256,32.000000,100,25600,32.000000
+Hybrid AES+RSA,8,292,36.500000,100,3856,4.820000
